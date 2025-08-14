@@ -78,7 +78,7 @@ export function Dashboard() {
               Kelola kelengkapan data, pantau progres per-domain, attach Google Drive, dan simulasi finansial cepat untuk business plan Quarry Andesit.
             </p>
           </div>
-          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="grid grid-cols-2 gap-4">
+          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="rounded-2xl">
               <CardContent className="p-4">
                 <div className="text-sm text-neutral-500">Progress keseluruhan</div>
@@ -112,7 +112,7 @@ export function Dashboard() {
         </div>
 
         {/* Quick stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
           <Card className="rounded-2xl">
             <CardContent className="p-4">
               <Stat label="Total item" value={String(stats.total)} />
