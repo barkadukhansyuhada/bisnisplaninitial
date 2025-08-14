@@ -59,7 +59,7 @@ export function Dashboard() {
       const m = list.filter((i) => i.status === "missing").length;
       const n = list.filter((i) => i.status === "na").length;
       return { domain: d.label, available: a, missing: m, na: n, total: list.length, pct: list.length ? Math.round((a / list.length) * 100) : 0 };
-    });
+    }).filter((d) => domain === "all" || d.domain === DOMAINS.find((x) => x.id === domain)?.label);
     return { total, available, missing, na, pct, perDomain };
   }, [items]);
 
@@ -106,7 +106,7 @@ export function Dashboard() {
           <Card className="rounded-2xl">
             <CardContent className="p-4">
               <h3 className="font-semibold text-lg mb-2">Progres per domain</h3>
-              <DomainBar perDomain={stats.perDomain} />
+              <DomainBar perDomain={stats.perDomain} selectedDomain={domain} onDomainChange={setDomain} />
             </CardContent>
           </Card>
         </div>
