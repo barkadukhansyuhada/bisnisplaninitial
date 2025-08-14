@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { numberFmt } from "@/lib/utils";
+import { HelpCircle } from "lucide-react";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -54,6 +55,17 @@ function numberFmt(n: number) {
   return n.toLocaleString("id-ID");
 }
 
+function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
+  return (
+    <span className="relative group">
+      {children}
+      <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        {text}
+      </span>
+    </span>
+  );
+}
+
 export function FinancialPanel() {
   const { state, set, res } = useFinancialModel();
   return (
@@ -64,25 +76,100 @@ export function FinancialPanel() {
           <Badge variant="outline">Editable</Badge>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <Input type="text" value={numberFmt(state.volume)} onChange={(e) => set.setVolume(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Volume (m³)" />
-          <Input type="text" value={numberFmt(state.price)} onChange={(e) => set.setPrice(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Harga (Rp/m³)" />
-          <Input type="text" value={numberFmt(state.fuelPerM3)} onChange={(e) => set.setFuelPerM3(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Fuel (Rp/m³)" />
-          <div className="grid grid-cols-2 gap-2">
-            <Input type="text" value={numberFmt(state.energyKwhPerM3)} onChange={(e) => set.setEnergyKwhPerM3(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="Energi (kWh/m³)" />
-            <Input type="text" value={numberFmt(state.tariff)} onChange={(e) => set.setTariff(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Tarif (Rp/kWh)" />
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.volume)} onChange={(e) => set.setVolume(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Volume (m³)" />
+            <Tooltip text="Total volume produksi per tahun dalam meter kubik (m³).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
           </div>
-          <Input type="text" value={numberFmt(state.royalty)} onChange={(e) => set.setRoyalty(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Royalti (Rp/m³)" />
-          <Input type="text" value={numberFmt(state.blasting)} onChange={(e) => set.setBlasting(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Peledakan (Rp/m³)" />
-          <Input type="text" value={numberFmt(state.spares)} onChange={(e) => set.setSpares(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Spare (Rp/m³)" />
-          <Input type="text" value={numberFmt(state.payroll)} onChange={(e) => set.setPayroll(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Payroll (Rp/thn)" />
-          <Input type="text" value={numberFmt(state.overhead)} onChange={(e) => set.setOverhead(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Overhead (Rp/thn)" />
-          <Input type="text" value={numberFmt(state.env)} onChange={(e) => set.setEnv(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Lingkungan/CSR (Rp/thn)" />
-          <div className="grid grid-cols-2 gap-2">
-            <Input type="text" value={numberFmt(state.sgaPct)} onChange={(e) => set.setSgaPct(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="SG&A (%)" />
-            <Input type="text" value={numberFmt(state.gensetAdmin)} onChange={(e) => set.setGensetAdmin(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Genset admin (Rp/thn)" />
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.price)} onChange={(e) => set.setPrice(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Harga (Rp/m³)" />
+            <Tooltip text="Harga jual rata-rata per meter kubik dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
           </div>
-          <Input type="text" value={numberFmt(state.capex)} onChange={(e) => set.setCapex(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="CAPEX (Rp)" />
-          <Input type="text" value={numberFmt(state.deprYears)} onChange={(e) => set.setDeprYears(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Depresiasi (tahun)" />
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.fuelPerM3)} onChange={(e) => set.setFuelPerM3(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Fuel (Rp/m³)" />
+            <Tooltip text="Biaya bahan bakar per meter kubik produksi dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2">
+              <Input type="text" value={numberFmt(state.energyKwhPerM3)} onChange={(e) => set.setEnergyKwhPerM3(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="Energi (kWh/m³)" />
+              <Tooltip text="Konsumsi energi listrik per meter kubik produksi dalam kilowatt-jam (kWh).">
+                <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+              </Tooltip>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input type="text" value={numberFmt(state.tariff)} onChange={(e) => set.setTariff(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Tarif (Rp/kWh)" />
+              <Tooltip text="Tarif listrik per kilowatt-jam dalam Rupiah (Rp).">
+                <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+              </Tooltip>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.royalty)} onChange={(e) => set.setRoyalty(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Royalti (Rp/m³)" />
+            <Tooltip text="Biaya royalti per meter kubik produksi dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.blasting)} onChange={(e) => set.setBlasting(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Peledakan (Rp/m³)" />
+            <Tooltip text="Biaya peledakan per meter kubik produksi dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.spares)} onChange={(e) => set.setSpares(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Spare (Rp/m³)" />
+            <Tooltip text="Biaya suku cadang per meter kubik produksi dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.payroll)} onChange={(e) => set.setPayroll(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Payroll (Rp/thn)" />
+            <Tooltip text="Total biaya gaji karyawan per tahun dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.overhead)} onChange={(e) => set.setOverhead(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Overhead (Rp/thn)" />
+            <Tooltip text="Total biaya overhead operasional per tahun dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.env)} onChange={(e) => set.setEnv(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Lingkungan/CSR (Rp/thn)" />
+            <Tooltip text="Biaya lingkungan dan CSR per tahun dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2">
+              <Input type="text" value={numberFmt(state.sgaPct)} onChange={(e) => set.setSgaPct(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="SG&A (%)" />
+              <Tooltip text="Persentase biaya penjualan, umum, dan administrasi (SG&A) dari pendapatan.">
+                <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+              </Tooltip>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input type="text" value={numberFmt(state.gensetAdmin)} onChange={(e) => set.setGensetAdmin(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Genset admin (Rp/thn)" />
+              <Tooltip text="Biaya operasional genset untuk administrasi per tahun dalam Rupiah (Rp).">
+                <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+              </Tooltip>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.capex)} onChange={(e) => set.setCapex(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="CAPEX (Rp)" />
+            <Tooltip text="Total pengeluaran modal (Capital Expenditure) dalam Rupiah (Rp).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.deprYears)} onChange={(e) => set.setDeprYears(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Depresiasi (tahun)" />
+            <Tooltip text="Jumlah tahun untuk depresiasi aset.">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
         </div>
         <Separator />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
