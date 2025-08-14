@@ -39,6 +39,7 @@ function useFinancialModel() {
   const [gensetAdmin, setGensetAdmin] = useState(32_400_000);
   const [capex, setCapex] = useState(37_350_000_000);
   const [deprYears, setDeprYears] = useState(5);
+  const [corporateTaxRate, setCorporateTaxRate] = useState(22); // Example: 22% for Indonesia
 
   const res = useMemo(() => {
     const revenue = volume * price;
@@ -52,10 +53,14 @@ function useFinancialModel() {
     const depr = capex / deprYears;
     const ebit = ebitda - depr;
     const ebitdaMargin = revenue ? ebitda / revenue : 0;
-    return { revenue, energyPerM3, varPerM3, varTotal, fixedTotal, opex, ebitda, ebit, depr, ebitdaMargin };
-  }, [volume, price, fuelPerM3, energyKwhPerM3, tariff, royalty, blasting, spares, payroll, overhead, env, sgaPct, gensetAdmin, capex, deprYears]);
+    const pbt = ebit; // Profit Before Tax
+    const tax = pbt > 0 ? (pbt * corporateTaxRate) / 100 : 0;
+    const netProfit = pbt - tax;
 
-  return { state: { volume, price, fuelPerM3, energyKwhPerM3, tariff, royalty, blasting, spares, payroll, overhead, env, sgaPct, gensetAdmin, capex, deprYears }, set: { setVolume, setPrice, setFuelPerM3, setEnergyKwhPerM3, setTariff, setRoyalty, setBlasting, setSpares, setPayroll, setOverhead, setEnv, setSgaPct, setGensetAdmin, setCapex, setDeprYears }, res };
+    return { revenue, energyPerM3, varPerM3, varTotal, fixedTotal, opex, ebitda, ebit, depr, ebitdaMargin, pbt, tax, netProfit };
+  }, [volume, price, fuelPerM3, energyKwhPerM3, tariff, royalty, blasting, spares, payroll, overhead, env, sgaPct, gensetAdmin, capex, deprYears, corporateTaxRate]);
+
+  return { state: { volume, price, fuelPerM3, energyKwhPerM3, tariff, royalty, blasting, spares, payroll, overhead, env, sgaPct, gensetAdmin, capex, deprYears, corporateTaxRate }, set: { setVolume, setPrice, setFuelPerM3, setEnergyKwhPerM3, setTariff, setRoyalty, setBlasting, setSpares, setPayroll, setOverhead, setEnv, setSgaPct, setGensetAdmin, setCapex, setDeprYears, setCorporateTaxRate }, res };
 }
 
 function numberFmt(n: number) {
@@ -177,6 +182,12 @@ export function FinancialPanel() {
               <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
             </Tooltip>
           </div>
+          <div className="flex items-center gap-2">
+            <Input type="text" value={numberFmt(state.corporateTaxRate)} onChange={(e) => set.setCorporateTaxRate(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Pajak Korporasi (%)" />
+            <Tooltip text="Tarif pajak korporasi dalam persen (%).">
+              <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
+            </Tooltip>
+          </div>
         </div>
         <Separator />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -187,6 +198,7 @@ export function FinancialPanel() {
           <Stat label="EBITDA Margin" value={(res.ebitdaMargin * 100).toFixed(1) + "%"} tooltipText="Persentase EBITDA terhadap pendapatan." />
           <Stat label="Depresiasi (Rp)" value={"Rp " + numberFmt(res.depr)} tooltipText="Penyusutan nilai aset per tahun dalam Rupiah (Rp)." />
           <Stat label="EBIT (Rp)" value={"Rp " + numberFmt(res.ebit)} tooltipText="Laba sebelum bunga dan pajak dalam Rupiah (Rp)." />
+          <Stat label="Laba Bersih (Rp)" value={"Rp " + numberFmt(res.netProfit)} tooltipText="Laba setelah dikurangi pajak dalam Rupiah (Rp)." />
         </div>
       </CardContent>
     </Card>
