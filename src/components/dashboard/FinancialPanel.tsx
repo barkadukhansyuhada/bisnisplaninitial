@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { numberFmt } from "@/lib/utils";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -63,25 +64,25 @@ export function FinancialPanel() {
           <Badge variant="outline">Editable</Badge>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <Input type="number" value={state.volume} onChange={(e) => set.setVolume(parseInt(e.target.value || "0"))} placeholder="Volume (m³)" />
-          <Input type="number" value={state.price} onChange={(e) => set.setPrice(parseInt(e.target.value || "0"))} placeholder="Harga (Rp/m³)" />
-          <Input type="number" value={state.fuelPerM3} onChange={(e) => set.setFuelPerM3(parseInt(e.target.value || "0"))} placeholder="Fuel (Rp/m³)" />
+          <Input type="text" value={numberFmt(state.volume)} onChange={(e) => set.setVolume(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Volume (m³)" />
+          <Input type="text" value={numberFmt(state.price)} onChange={(e) => set.setPrice(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Harga (Rp/m³)" />
+          <Input type="text" value={numberFmt(state.fuelPerM3)} onChange={(e) => set.setFuelPerM3(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Fuel (Rp/m³)" />
           <div className="grid grid-cols-2 gap-2">
-            <Input type="number" value={state.energyKwhPerM3} onChange={(e) => set.setEnergyKwhPerM3(parseFloat(e.target.value || "0"))} placeholder="Energi (kWh/m³)" />
-            <Input type="number" value={state.tariff} onChange={(e) => set.setTariff(parseInt(e.target.value || "0"))} placeholder="Tarif (Rp/kWh)" />
+            <Input type="text" value={numberFmt(state.energyKwhPerM3)} onChange={(e) => set.setEnergyKwhPerM3(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="Energi (kWh/m³)" />
+            <Input type="text" value={numberFmt(state.tariff)} onChange={(e) => set.setTariff(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Tarif (Rp/kWh)" />
           </div>
-          <Input type="number" value={state.royalty} onChange={(e) => set.setRoyalty(parseInt(e.target.value || "0"))} placeholder="Royalti (Rp/m³)" />
-          <Input type="number" value={state.blasting} onChange={(e) => set.setBlasting(parseInt(e.target.value || "0"))} placeholder="Peledakan (Rp/m³)" />
-          <Input type="number" value={state.spares} onChange={(e) => set.setSpares(parseInt(e.target.value || "0"))} placeholder="Spare (Rp/m³)" />
-          <Input type="number" value={state.payroll} onChange={(e) => set.setPayroll(parseInt(e.target.value || "0"))} placeholder="Payroll (Rp/thn)" />
-          <Input type="number" value={state.overhead} onChange={(e) => set.setOverhead(parseInt(e.target.value || "0"))} placeholder="Overhead (Rp/thn)" />
-          <Input type="number" value={state.env} onChange={(e) => set.setEnv(parseInt(e.target.value || "0"))} placeholder="Lingkungan/CSR (Rp/thn)" />
+          <Input type="text" value={numberFmt(state.royalty)} onChange={(e) => set.setRoyalty(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Royalti (Rp/m³)" />
+          <Input type="text" value={numberFmt(state.blasting)} onChange={(e) => set.setBlasting(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Peledakan (Rp/m³)" />
+          <Input type="text" value={numberFmt(state.spares)} onChange={(e) => set.setSpares(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Spare (Rp/m³)" />
+          <Input type="text" value={numberFmt(state.payroll)} onChange={(e) => set.setPayroll(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Payroll (Rp/thn)" />
+          <Input type="text" value={numberFmt(state.overhead)} onChange={(e) => set.setOverhead(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Overhead (Rp/thn)" />
+          <Input type="text" value={numberFmt(state.env)} onChange={(e) => set.setEnv(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Lingkungan/CSR (Rp/thn)" />
           <div className="grid grid-cols-2 gap-2">
-            <Input type="number" value={state.sgaPct} onChange={(e) => set.setSgaPct(parseFloat(e.target.value || "0"))} placeholder="SG&A (%)" />
-            <Input type="number" value={state.gensetAdmin} onChange={(e) => set.setGensetAdmin(parseInt(e.target.value || "0"))} placeholder="Genset admin (Rp/thn)" />
+            <Input type="text" value={numberFmt(state.sgaPct)} onChange={(e) => set.setSgaPct(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="SG&A (%)" />
+            <Input type="text" value={numberFmt(state.gensetAdmin)} onChange={(e) => set.setGensetAdmin(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Genset admin (Rp/thn)" />
           </div>
-          <Input type="number" value={state.capex} onChange={(e) => set.setCapex(parseInt(e.target.value || "0"))} placeholder="CAPEX (Rp)" />
-          <Input type="number" value={state.deprYears} onChange={(e) => set.setDeprYears(parseInt(e.target.value || "0"))} placeholder="Depresiasi (tahun)" />
+          <Input type="text" value={numberFmt(state.capex)} onChange={(e) => set.setCapex(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="CAPEX (Rp)" />
+          <Input type="text" value={numberFmt(state.deprYears)} onChange={(e) => set.setDeprYears(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Depresiasi (tahun)" />
         </div>
         <Separator />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
