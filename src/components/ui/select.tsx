@@ -36,8 +36,11 @@ export function Select({ value, onValueChange, children, className = '' }: Selec
     // Support nested SelectContent
     if (child.type && (child.type as any).displayName === 'SelectContent') {
       React.Children.forEach(child.props.children, (sub) => {
-        if (React.isValidElement(sub) && sub.props.value !== undefined) {
-          options.push({ value: sub.props.value, label: sub.props.children });
+        if (React.isValidElement(sub)) {
+          const el = sub as React.ReactElement<{ value?: any; children?: React.ReactNode }>;
+          if (el.props.value !== undefined) {
+            options.push({ value: el.props.value, label: el.props.children });
+          }
         }
       });
     }
