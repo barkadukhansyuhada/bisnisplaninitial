@@ -7,11 +7,18 @@ import { Separator } from "@/components/ui/separator";
 import { numberFmt } from "@/lib/utils";
 import { HelpCircle } from "lucide-react";
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, tooltipText }: { label: string; value: string; tooltipText?: string }) {
   return (
     <div className="flex flex-col items-start">
       <span className="text-sm text-neutral-500">{label}</span>
-      <span className="text-xl font-semibold">{value}</span>
+      <span className="text-xl font-semibold flex items-center gap-1">
+        {value}
+        {tooltipText && (
+          <Tooltip text={tooltipText}>
+            <HelpCircle className="w-4 h-4 text-neutral-400 cursor-help" />
+          </Tooltip>
+        )}
+      </span>
     </div>
   );
 }
@@ -173,13 +180,13 @@ export function FinancialPanel() {
         </div>
         <Separator />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Stat label="Revenue (Rp)" value={"Rp " + numberFmt(res.revenue)} />
-          <Stat label="Variabel/m³ (Rp)" value={numberFmt(res.varPerM3)} />
-          <Stat label="Opex Total (Rp)" value={"Rp " + numberFmt(res.opex)} />
-          <Stat label="EBITDA (Rp)" value={"Rp " + numberFmt(res.ebitda)} />
-          <Stat label="EBITDA Margin" value={(res.ebitdaMargin * 100).toFixed(1) + "%"} />
-          <Stat label="Depresiasi (Rp)" value={"Rp " + numberFmt(res.depr)} />
-          <Stat label="EBIT (Rp)" value={"Rp " + numberFmt(res.ebit)} />
+          <Stat label="Revenue (Rp)" value={"Rp " + numberFmt(res.revenue)} tooltipText="Total pendapatan dari penjualan produk dalam Rupiah (Rp)." />
+          <Stat label="Variabel/m³ (Rp)" value={numberFmt(res.varPerM3)} tooltipText="Biaya variabel per meter kubik produksi dalam Rupiah (Rp)." />
+          <Stat label="Opex Total (Rp)" value={"Rp " + numberFmt(res.opex)} tooltipText="Total biaya operasional (variabel + tetap) dalam Rupiah (Rp)." />
+          <Stat label="EBITDA (Rp)" value={"Rp " + numberFmt(res.ebitda)} tooltipText="Laba sebelum bunga, pajak, depresiasi, dan amortisasi dalam Rupiah (Rp)." />
+          <Stat label="EBITDA Margin" value={(res.ebitdaMargin * 100).toFixed(1) + "%"} tooltipText="Persentase EBITDA terhadap pendapatan." />
+          <Stat label="Depresiasi (Rp)" value={"Rp " + numberFmt(res.depr)} tooltipText="Penyusutan nilai aset per tahun dalam Rupiah (Rp)." />
+          <Stat label="EBIT (Rp)" value={"Rp " + numberFmt(res.ebit)} tooltipText="Laba sebelum bunga dan pajak dalam Rupiah (Rp)." />
         </div>
       </CardContent>
     </Card>
