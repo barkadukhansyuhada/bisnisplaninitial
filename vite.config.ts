@@ -4,6 +4,7 @@ import { resolve } from 'path';
 
 // Vite configuration
 export default defineConfig({
+  base: "/bisnisplaninitial/",
   plugins: [react()],
   resolve: {
     alias: {

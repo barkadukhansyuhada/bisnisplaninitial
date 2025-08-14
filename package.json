@@ -1,6 +1,7 @@
 {
   "name": "data-room-galian-c",
   "version": "1.0.0",
+  "homepage": "https://barkadukhansyuhada.github.io/bisnisplaninitial",
   "private": true,
   "description": "Interactive dashboard and data room for preparing a business plan in the extractive industry (Galian C).",
   "license": "MIT",
