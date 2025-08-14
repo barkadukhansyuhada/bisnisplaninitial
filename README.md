@@ -1,10 +1,10 @@
 # Data Room Galian C
 
-An interactive dashboard and data room for assembling a complete business plan for a quarry (known locally as *Galian C*). It allows you to track the readiness of key documents and datasets across geology, quality control, mine planning, plant design, operations, market analysis, finance, permits and governance. Users can upload evidence, link to source documents on Google Drive, simulate a simple financial model and visualise a Gantt‑style timeline.
+An interactive dashboard and data room for assembling a complete business plan for a quarry (known locally as *Galian C*). It allows you to track the readiness of key documents and datasets across geology, quality control, mine planning, plant design, operations, market analysis, finance, permits and governance. Users can upload evidence, link to source documents on Google Drive, simulate a simple financial model and visualise a Gantt‑style timeline.
 
 ## Getting Started
 
-This project is built with [React](https://react.dev/) and [Vite](https://vitejs.dev/) and uses [Tailwind CSS](https://tailwindcss.com/) for styling. To work with this repository locally you will need Node.js ≥ 16.
+This project is built with [React](https://react.dev/) and [Vite](https://vitejs.dev/) and uses [Tailwind CSS](https://tailwindcss.com/) for styling. It now uses [Zustand](https://zustand-bear.github.io/) for state management and [Jest](https://jestjs.io/) with [React Testing Library](https://testing-library.com/react/) for testing. To work with this repository locally you will need Node.js ≥ 16.
 
 ### Installation
 
@@ -15,7 +15,7 @@ This project is built with [React](https://react.dev/) and [Vite](https://vitejs
    cd data-room-galian-c
    ```
 
-2. Install the dependencies. All runtime packages (React, Recharts, Framer Motion, Lucide React, XLSX) and development tools (Vite, Tailwind CSS, TypeScript) are declared in `package.json`:
+2. Install the dependencies. All runtime packages (React, Recharts, Framer Motion, Lucide React, XLSX) and development tools (Vite, Tailwind CSS, TypeScript, Jest, Zustand) are declared in `package.json`:
 
    ```sh
    npm install
@@ -45,9 +45,17 @@ This will emit a `dist` folder with static assets ready to be served. You can pr
 npm run preview
 ```
 
+### Running Tests
+
+To run the unit tests, use:
+
+```sh
+npm test
+```
+
 ### Deployment
 
-The project is a static site once built, so it can be hosted anywhere you would normally deploy a single‑page application (GitHub Pages, Vercel, Netlify, S3, etc.). A typical workflow for GitHub Pages might look like this:
+The project is a static site once built, so it can be hosted anywhere you would normally deploy a single‑page application (GitHub Pages, Vercel, Netlify, S3, etc.). A typical workflow for GitHub Pages might look like this:
 
 ```sh
 npm run build
@@ -68,11 +76,13 @@ Alternatively, configure your CI pipeline to run `npm run build` and publish the
 ├── tailwind.config.js      # Tailwind theme and scanning paths
 ├── tsconfig.json           # TypeScript compiler options, including alias '@'
 ├── vite.config.ts          # Vite configuration (React plugin and path alias)
+├── jest.config.js          # Jest test runner configuration
 ├── src/
 │   ├── main.tsx            # Mounts the React application
 │   ├── App.tsx             # Root component that renders the dashboard
-│   ├── BisnisPlan.tsx      # The interactive dashboard ported from the provided TSX file
+│   ├── BisnisPlan.tsx      # Main entry point for the dashboard (now a wrapper for Dashboard.tsx)
 │   ├── index.css           # Tailwind directives
+│   ├── setupTests.ts       # Jest setup file for test environment
 │   └── components/
 │       └── ui/             # Minimal UI primitives used by the dashboard
 │           ├── badge.tsx
@@ -82,14 +92,35 @@ Alternatively, configure your CI pipeline to run `npm run build` and publish the
 │           ├── select.tsx
 │           ├── separator.tsx
 │           └── switch.tsx
+│       └── dashboard/      # Dashboard-specific components
+│           ├── Dashboard.tsx
+│           ├── AddItem.tsx
+│           ├── DomainBar.tsx
+│           ├── FinancialPanel.tsx
+│           ├── ItemCard.tsx
+│           ├── SourceLinksPanel.tsx
+│           ├── StatusPill.tsx
+│           ├── SummaryDonut.tsx
+│           ├── TableView.tsx
+│           ├── TestPanel.tsx
+│           ├── Timeline.tsx
+│           ├── Toolbar.tsx
+│           └── UploadCenter.tsx
+│   └── lib/                # Library files (hooks, utils, types, constants)
+│       ├── constants.ts
+│       ├── domains.tsx
+│       ├── store.ts
+│       ├── types.ts
+│       └── utils.ts
 └── README.md
 ```
 
-The large dashboard component from `bisnisplan.tsx` has been copied into `src/BisnisPlan.tsx` and minimally adapted for this project. It imports the UI primitives from `src/components/ui`. The alias `@/` points to the `src/` folder to keep import statements concise.
+The large dashboard component from `bisnisplan.tsx` has been refactored into smaller, more manageable components under `src/components/dashboard`. The state management is now handled by Zustand, and the project includes Jest and React Testing Library for unit testing.
 
 ## Notes
 
-* The UI components included here are simple wrappers around HTML elements with Tailwind utility classes. They do not implement all behaviours of the original ShadCN components but provide enough structure for the dashboard to render and be extended.
-* If you wish to customise the look and feel further or swap out the UI primitives for a more fully featured library, adjust the files under `src/components/ui` accordingly.
+*   The UI components included here are simple wrappers around HTML elements with Tailwind utility classes. They do not implement all behaviours of the original ShadCN components but provide enough structure for the dashboard to render and be extended.
+*   If you wish to customise the look and feel further or swap out the UI primitives for a more fully featured library, adjust the files under `src/components/ui` accordingly.
+*   **Known Vulnerability:** The `xlsx` library has a known high-severity vulnerability (Prototype Pollution and ReDoS). There is currently no automatic fix available. Please be aware of this when handling untrusted Excel files.
 
 Enjoy building and iterating on your quarry business plan dashboard!

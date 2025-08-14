@@ -6,6 +6,7 @@
     "strict": true,
     "noImplicitAny": false,
     "moduleResolution": "node",
+    "types": ["jest"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
