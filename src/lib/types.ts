@@ -15,6 +15,7 @@ export type DataItem = {
   owner?: string;
   due?: string; // ISO date string
   priority?: "Low" | "Medium" | "High";
+  date?: string; // ISO date string for time-series data
 };
 
 export type SourceMap = { geo?: string; laa?: string; resume?: string };

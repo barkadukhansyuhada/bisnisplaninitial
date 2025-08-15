@@ -61,7 +61,7 @@ export function Dashboard() {
       return { domain: d.label, available: a, missing: m, na: n, total: list.length, pct: list.length ? Math.round((a / list.length) * 100) : 0 };
     }).filter((d) => domain === "all" || d.domain === DOMAINS.find((x) => x.id === domain)?.label);
     return { total, available, missing, na, pct, perDomain };
-  }, [items]);
+  }, [items, domain]);
 
   
 
