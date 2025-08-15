@@ -11,6 +11,7 @@ import { DataItem, ItemStatus } from '@/lib/types';
 import { DomainBadge } from './DomainBadge';
 import { StatusPill } from './StatusPill';
 import { DOMAIN_COLORS } from '@/lib/constants';
+import { DOMAINS } from '@/lib/domains';
 
 export function ItemCard({
   item,
@@ -45,8 +46,10 @@ export function ItemCard({
                 <StatusPill status={item.status} />
               </div>
               <h3 className="mt-1 font-semibold text-neutral-900 leading-tight flex items-center gap-1">
-                {item.title}
-                {item.priority === "High" && <Star className="w-4 h-4 text-amber-500" />}
+                {DOMAINS.find((d) => d.id === item.domain)?.icon} {item.title}
+                {item.priority === "High" && <Star className="w-5 h-5 text-amber-500 fill-amber-500" />}
+                {item.priority === "Medium" && <Star className="w-5 h-5 text-neutral-400" />}
+                {item.priority === "Low" && <Star className="w-5 h-5 text-neutral-200" />}
               </h3>
               <Input className="mt-2" value={item.details || ""} onChange={(e) => onDetails(e.target.value)} placeholder="Detail (opsional)" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">

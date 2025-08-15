@@ -11,7 +11,7 @@ export const StatusPill = ({ status }: { status: ItemStatus }) => {
   };
   const m = map[status];
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${m.color}`}>
+    <span className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-sm font-medium ${m.color}`}>
       {m.icon}
       {m.label}
     </span>
