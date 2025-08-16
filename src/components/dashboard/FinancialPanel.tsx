@@ -4,8 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { numberFmt } from "@/lib/utils";
 import { HelpCircle } from "lucide-react";
+
+// Helper function to format numbers, assuming it's defined elsewhere or here.
+function numberFmt(n: number, decimals: number = 0) {
+  return n.toLocaleString("id-ID", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
 
 function Stat({ label, value, tooltipText }: { label: string; value: string; tooltipText?: string }) {
   return (
@@ -23,10 +30,28 @@ function Stat({ label, value, tooltipText }: { label: string; value: string; too
   );
 }
 
+function SliderInput({ label, value, min, max, step, onChange, unit }: { label: string; value: number; min: number; max: number; step: number; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; unit: string; }) {
+    return (
+        <div className="flex flex-col space-y-1">
+            <label htmlFor={label} className="text-sm font-medium text-neutral-700 flex justify-between">
+                <span>{label}</span>
+                <span className="font-bold">{value} {unit}</span>
+            </label>
+            <Input id={label} type="range" min={min} max={max} step={step} value={value} onChange={onChange} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" />
+        </div>
+    );
+}
+
+
 function useFinancialModel() {
-  const [volume, setVolume] = useState(500_000);
+  // Production inputs
+  const [excavators, setExcavators] = useState(5);
+  const [trucks, setTrucks] = useState(10);
+  const [hoursPerDay, setHoursPerDay] = useState(8);
+
+  // Financial inputs
   const [price, setPrice] = useState(120_000);
-  const [fuelPerM3, setFuelPerM3] = useState(22464);
+  const [fuelPrice, setFuelPrice] = useState(12_000); // Harga solar per liter
   const [energyKwhPerM3, setEnergyKwhPerM3] = useState(4);
   const [tariff, setTariff] = useState(1444);
   const [royalty, setRoyalty] = useState(3000);
@@ -39,11 +64,33 @@ function useFinancialModel() {
   const [gensetAdmin, setGensetAdmin] = useState(32_400_000);
   const [capex, setCapex] = useState(37_350_000_000);
   const [deprYears, setDeprYears] = useState(5);
-  const [corporateTaxRate, setCorporateTaxRate] = useState(22); // Example: 22% for Indonesia
+  const [corporateTaxRate, setCorporateTaxRate] = useState(22);
 
   const res = useMemo(() => {
+    // Production & Fuel Calculations
+    const DAYS_PER_YEAR = 300;
+    const EXCAVATOR_PRODUCTIVITY = 83.31; // m³/jam
+    const TRUCK_PRODUCTIVITY = 30; // m³/jam
+    const EXCAVATOR_FUEL_CONSUMPTION = 20; // L/jam
+    const TRUCK_FUEL_CONSUMPTION = 18.9; // L/jam
+
+    const annualExcaVolume = excavators * EXCAVATOR_PRODUCTIVITY * hoursPerDay * DAYS_PER_YEAR;
+    const annualTruckVolume = trucks * TRUCK_PRODUCTIVITY * hoursPerDay * DAYS_PER_YEAR;
+    const achievableVolume = Math.min(annualExcaVolume, annualTruckVolume);
+
+    const fuelExcavators = excavators * EXCAVATOR_FUEL_CONSUMPTION * hoursPerDay * DAYS_PER_YEAR;
+    const fuelTrucks = trucks * TRUCK_FUEL_CONSUMPTION * hoursPerDay * DAYS_PER_YEAR;
+    const totalFuelLiters = fuelExcavators + fuelTrucks;
+    const totalFuelCost = totalFuelLiters * fuelPrice;
+    
+    // This is now a calculated cost, not a per-m3 input
+    const fuelPerM3 = achievableVolume > 0 ? totalFuelCost / achievableVolume : 0;
+
+    // Financial Calculations
+    const volume = achievableVolume; // Use calculated volume
     const revenue = volume * price;
     const energyPerM3 = energyKwhPerM3 * tariff;
+    // Variable cost now uses the calculated fuel cost
     const varPerM3 = fuelPerM3 + energyPerM3 + royalty + blasting + spares;
     const varTotal = varPerM3 * volume;
     const sga = (sgaPct / 100) * revenue;
@@ -57,14 +104,27 @@ function useFinancialModel() {
     const tax = pbt > 0 ? (pbt * corporateTaxRate) / 100 : 0;
     const netProfit = pbt - tax;
 
-    return { revenue, energyPerM3, varPerM3, varTotal, fixedTotal, opex, ebitda, ebit, depr, ebitdaMargin, pbt, tax, netProfit };
-  }, [volume, price, fuelPerM3, energyKwhPerM3, tariff, royalty, blasting, spares, payroll, overhead, env, sgaPct, gensetAdmin, capex, deprYears, corporateTaxRate]);
+    return {
+      // Production results
+      annualExcaVolume, annualTruckVolume, achievableVolume,
+      fuelExcavators, fuelTrucks, totalFuelLiters, totalFuelCost,
+      // Financial results
+      revenue, energyPerM3, varPerM3, varTotal, fixedTotal, opex, ebitda, ebit, depr, ebitdaMargin, pbt, tax, netProfit
+    };
+  }, [excavators, trucks, hoursPerDay, price, fuelPrice, energyKwhPerM3, tariff, royalty, blasting, spares, payroll, overhead, env, sgaPct, gensetAdmin, capex, deprYears, corporateTaxRate]);
 
-  return { state: { volume, price, fuelPerM3, energyKwhPerM3, tariff, royalty, blasting, spares, payroll, overhead, env, sgaPct, gensetAdmin, capex, deprYears, corporateTaxRate }, set: { setVolume, setPrice, setFuelPerM3, setEnergyKwhPerM3, setTariff, setRoyalty, setBlasting, setSpares, setPayroll, setOverhead, setEnv, setSgaPct, setGensetAdmin, setCapex, setDeprYears, setCorporateTaxRate }, res };
-}
-
-function numberFmt(n: number) {
-  return n.toLocaleString("id-ID");
+  return {
+    state: {
+      excavators, trucks, hoursPerDay, price, fuelPrice, energyKwhPerM3, tariff, royalty, blasting, spares, payroll, overhead, env, sgaPct, gensetAdmin, capex, deprYears, corporateTaxRate,
+      // Pass calculated volume to state for display
+      volume: res.achievableVolume,
+      fuelPerM3: res.fuelPerM3,
+    },
+    set: {
+      setExcavators, setTrucks, setHoursPerDay, setPrice, setFuelPrice, setEnergyKwhPerM3, setTariff, setRoyalty, setBlasting, setSpares, setPayroll, setOverhead, setEnv, setSgaPct, setGensetAdmin, setCapex, setDeprYears, setCorporateTaxRate
+    },
+    res
+  };
 }
 
 function Tooltip({ children, text }: { children: React.ReactNode; text: string }) {
@@ -82,15 +142,34 @@ export function FinancialPanel() {
   const { state, set, res } = useFinancialModel();
   return (
     <Card className="rounded-2xl">
-      <CardContent className="p-4 md:p-6 space-y-4">
+      <CardContent className="p-4 md:p-6 space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-lg">Financial Quick Model</h3>
-          <Badge variant="outline">Editable</Badge>
+          <h3 className="font-semibold text-lg">Financial & Production Model</h3>
+          <Badge variant="outline">Interactive</Badge>
         </div>
+
+        {/* Production Sliders */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <SliderInput label="Jumlah Excavator" value={state.excavators} min={1} max={20} step={1} onChange={(e) => set.setExcavators(parseInt(e.target.value))} unit="unit" />
+            <SliderInput label="Jumlah Dump Truck" value={state.trucks} min={1} max={20} step={1} onChange={(e) => set.setTrucks(parseInt(e.target.value))} unit="unit" />
+            <SliderInput label="Jam Operasi / Hari" value={state.hoursPerDay} min={4} max={24} step={1} onChange={(e) => set.setHoursPerDay(parseInt(e.target.value))} unit="jam" />
+        </div>
+        
+        {/* Production & Fuel Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Stat label="Kapasitas Excavator" value={`${numberFmt(res.annualExcaVolume)} m³/thn`} tooltipText="Kapasitas gali tahunan berdasarkan jumlah excavator." />
+            <Stat label="Kapasitas Angkut" value={`${numberFmt(res.annualTruckVolume)} m³/thn`} tooltipText="Kapasitas angkut tahunan berdasarkan jumlah dump truck." />
+            <Stat label="Total Solar" value={`${numberFmt(res.totalFuelLiters)} L/thn`} tooltipText="Total konsumsi solar untuk excavator dan dump truck per tahun." />
+            <Stat label="Biaya Solar" value={`Rp ${numberFmt(res.totalFuelCost)}`} tooltipText="Total biaya solar per tahun." />
+        </div>
+
+        <Separator />
+
+        {/* Financial Inputs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="flex items-center gap-2">
-            <Input type="text" value={numberFmt(state.volume)} onChange={(e) => set.setVolume(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Volume (m³)" />
-            <Tooltip text="Total volume produksi per tahun dalam meter kubik (m³).">
+            <Input type="text" value={numberFmt(state.volume)} readOnly placeholder="Volume (m³)" className="bg-gray-100" />
+            <Tooltip text="Total volume produksi per tahun (dihitung dari kapasitas minimum antara excavator dan truk).">
               <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
             </Tooltip>
           </div>
@@ -101,14 +180,14 @@ export function FinancialPanel() {
             </Tooltip>
           </div>
           <div className="flex items-center gap-2">
-            <Input type="text" value={numberFmt(state.fuelPerM3)} onChange={(e) => set.setFuelPerM3(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Fuel (Rp/m³)" />
-            <Tooltip text="Biaya bahan bakar per meter kubik produksi dalam Rupiah (Rp).">
+            <Input type="text" value={numberFmt(state.fuelPrice)} onChange={(e) => set.setFuelPrice(parseInt(e.target.value.replace(/\./g, '') || "0"))} placeholder="Harga Solar (Rp/L)" />
+            <Tooltip text="Harga bahan bakar solar per liter dalam Rupiah (Rp).">
               <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
             </Tooltip>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center gap-2">
-              <Input type="text" value={numberFmt(state.energyKwhPerM3)} onChange={(e) => set.setEnergyKwhPerM3(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="Energi (kWh/m³)" />
+              <Input type="text" value={numberFmt(state.energyKwhPerM3, 1)} onChange={(e) => set.setEnergyKwhPerM3(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="Energi (kWh/m³)" />
               <Tooltip text="Konsumsi energi listrik per meter kubik produksi dalam kilowatt-jam (kWh).">
                 <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
               </Tooltip>
@@ -158,7 +237,7 @@ export function FinancialPanel() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center gap-2">
-              <Input type="text" value={numberFmt(state.sgaPct)} onChange={(e) => set.setSgaPct(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="SG&A (%)" />
+              <Input type="text" value={numberFmt(state.sgaPct, 1)} onChange={(e) => set.setSgaPct(parseFloat(e.target.value.replace(/\./g, '').replace(/,/g, '.') || "0"))} placeholder="SG&A (%)" />
               <Tooltip text="Persentase biaya penjualan, umum, dan administrasi (SG&A) dari pendapatan.">
                 <HelpCircle className="w-4 h-4 text-neutral-500 cursor-help" />
               </Tooltip>
@@ -190,12 +269,13 @@ export function FinancialPanel() {
           </div>
         </div>
         <Separator />
+        {/* Financial Results */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Stat label="Revenue (Rp)" value={"Rp " + numberFmt(res.revenue)} tooltipText="Total pendapatan dari penjualan produk dalam Rupiah (Rp)." />
-          <Stat label="Variabel/m³ (Rp)" value={numberFmt(res.varPerM3)} tooltipText="Biaya variabel per meter kubik produksi dalam Rupiah (Rp)." />
+          <Stat label="Variabel/m³ (Rp)" value={numberFmt(res.varPerM3)} tooltipText="Biaya variabel per meter kubik produksi (termasuk biaya solar yang dihitung otomatis)." />
           <Stat label="Opex Total (Rp)" value={"Rp " + numberFmt(res.opex)} tooltipText="Total biaya operasional (variabel + tetap) dalam Rupiah (Rp)." />
           <Stat label="EBITDA (Rp)" value={"Rp " + numberFmt(res.ebitda)} tooltipText="Laba sebelum bunga, pajak, depresiasi, dan amortisasi dalam Rupiah (Rp)." />
-          <Stat label="EBITDA Margin" value={(res.ebitdaMargin * 100).toFixed(1) + "%"} tooltipText="Persentase EBITDA terhadap pendapatan." />
+          <Stat label="EBITDA Margin" value={numberFmt(res.ebitdaMargin * 100, 1) + "%"} tooltipText="Persentase EBITDA terhadap pendapatan." />
           <Stat label="Depresiasi (Rp)" value={"Rp " + numberFmt(res.depr)} tooltipText="Penyusutan nilai aset per tahun dalam Rupiah (Rp)." />
           <Stat label="EBIT (Rp)" value={"Rp " + numberFmt(res.ebit)} tooltipText="Laba sebelum bunga dan pajak dalam Rupiah (Rp)." />
           <Stat label="Laba Bersih (Rp)" value={"Rp " + numberFmt(res.netProfit)} tooltipText="Laba setelah dikurangi pajak dalam Rupiah (Rp)." />
