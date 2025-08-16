@@ -48,6 +48,7 @@ export function Dashboard() {
   const filtered = React.useMemo(() => filterItems(items, domain, q), [items, domain, q]);
 
   const stats = React.useMemo(() => {
+    console.log("Recalculating stats...");
     const total = items.length;
     const available = items.filter((i) => i.status === "available").length;
     const missing = items.filter((i) => i.status === "missing").length;

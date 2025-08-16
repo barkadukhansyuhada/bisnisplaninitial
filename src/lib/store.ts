@@ -1,5 +1,6 @@
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { DataItem, DomainId, ItemStatus, SourceMap } from './types';
 import { buildCSV, filterItems, mapSourceLinks } from './utils';
 import * as XLSX from 'xlsx';
@@ -112,81 +113,89 @@ interface AppState {
   bulkApplySourceLinks: (src: SourceMap) => void;
 }
 
-export const useStore = create<AppState>((set, get) => ({
-  items: seedItems,
-  q: '',
-  domain: 'all',
-  view: 'cards',
-  setItems: (items) => set({ items }),
-  setQ: (q) => set({ q }),
-  setDomain: (domain) => set({ domain }),
-  setView: (view) => set({ view }),
-  setStatus: (id, status) =>
-    set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, status } : i))})),
-  setDetails: (id, details) =>
-    set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, details } : i))})),
-  setUnit: (id, unit) =>
-    set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, unit } : i))})),
-  setLink: (id, link) =>
-    set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, link } : i))})),
-  setOwner: (id, owner) =>
-    set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, owner } : i))})),
-  setDue: (id, due) =>
-    set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, due } : i))})),
-  setPriority: (id, priority) =>
-    set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, priority } : i))})),
-  addItem: (partial) =>
-    set((state) => ({
-      items: [
-        {
-          id: Math.random().toString(36).slice(2),
-          domain: (partial.domain as DomainId) || "geology",
-          title: partial.title || "Item baru",
-          details: partial.details || "",
-          unit: partial.unit || "—",
-          status: partial.status || "missing",
-          source: partial.source || "",
-          link: partial.link || "",
-          owner: partial.owner || "",
-          due: partial.due || "",
-          priority: partial.priority || "Medium",
-        },
-        ...state.items,
-      ],
-    })),
-  importJSON: (text) => {
-    try {
-      const arr = JSON.parse(text);
-      if (Array.isArray(arr)) set({ items: arr });
-    } catch (e) {
-      alert("File/teks JSON tidak valid");
+export const useStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      items: seedItems,
+      q: '',
+      domain: 'all',
+      view: 'cards',
+      setItems: (items) => set({ items }),
+      setQ: (q) => set({ q }),
+      setDomain: (domain) => set({ domain }),
+      setView: (view) => set({ view }),
+      setStatus: (id, status) =>
+        set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, status } : i))})),
+      setDetails: (id, details) =>
+        set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, details } : i))})),
+      setUnit: (id, unit) =>
+        set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, unit } : i))})),
+      setLink: (id, link) =>
+        set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, link } : i))})),
+      setOwner: (id, owner) =>
+        set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, owner } : i))})),
+      setDue: (id, due) =>
+        set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, due } : i))})),
+      setPriority: (id, priority) =>
+        set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, priority } : i))})),
+      addItem: (partial) =>
+        set((state) => ({
+          items: [
+            {
+              id: Math.random().toString(36).slice(2),
+              domain: (partial.domain as DomainId) || "geology",
+              title: partial.title || "Item baru",
+              details: partial.details || "",
+              unit: partial.unit || "—",
+              status: partial.status || "missing",
+              source: partial.source || "",
+              link: partial.link || "",
+              owner: partial.owner || "",
+              due: partial.due || "",
+              priority: partial.priority || "Medium",
+            },
+            ...state.items,
+          ],
+        })),
+      importJSON: (text) => {
+        try {
+          const arr = JSON.parse(text);
+          if (Array.isArray(arr)) set({ items: arr });
+        } catch (e) {
+          alert("File/teks JSON tidak valid");
+        }
+      },
+      exportCSV: () => {
+        const items = get().items;
+        const csv = buildCSV(items);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "data-room-galian-c.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      exportXLSX: () => {
+        const items = get().items;
+        const ws = XLSX.utils.json_to_sheet(items);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Checklist");
+        const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+        const blob = new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "data-room-galian-c.xlsx";
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      bulkApplySourceLinks: (src) =>
+        set((state) => ({ items: mapSourceLinks(state.items, src) })),
+    }),
+    {
+      name: 'galianc-storage',
+      getStorage: () => localStorage,
     }
-  },
-  exportCSV: () => {
-    const items = get().items;
-    const csv = buildCSV(items);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "data-room-galian-c.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  },
-  exportXLSX: () => {
-    const items = get().items;
-    const ws = XLSX.utils.json_to_sheet(items);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Checklist");
-    const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "data-room-galian-c.xlsx";
-    a.click();
-    URL.revokeObjectURL(url);
-  },
-  bulkApplySourceLinks: (src) =>
-    set((state) => ({ items: mapSourceLinks(state.items, src) })),
-}));
+  )
+);
