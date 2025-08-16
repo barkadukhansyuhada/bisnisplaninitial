@@ -1,9 +1,9 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { DataItem, DomainId, ItemStatus, SourceMap } from './types';
 import { buildCSV, filterItems, mapSourceLinks } from './utils';
 import * as XLSX from 'xlsx';
+import { DOMAINS } from '@/lib/domains';
 
 // ---- Seed items (prefill) ----
 const seedItems: DataItem[] = [
@@ -95,6 +95,7 @@ interface AppState {
   q: string;
   domain: DomainId | 'all';
   view: 'cards' | 'table';
+  stats: { total: number; available: number; missing: number; na: number; pct: number; perDomain: { domain: string; available: number; missing: number; na: number; total: number; pct: number; }[]; };
   setItems: (items: DataItem[]) => void;
   setQ: (q: string) => void;
   setDomain: (domain: DomainId | 'all') => void;
@@ -192,6 +193,36 @@ export const useStore = create<AppState>()(
       },
       bulkApplySourceLinks: (src) =>
         set((state) => ({ items: mapSourceLinks(state.items, src) })),
+      stats: {
+        get total() {
+          return get().items.length;
+        },
+        get available() {
+          return get().items.filter((i) => i.status === "available").length;
+        },
+        get missing() {
+          return get().items.filter((i) => i.status === "missing").length;
+        },
+        get na() {
+          return get().items.filter((i) => i.status === "na").length;
+        },
+        get pct() {
+          const total = get().items.length;
+          const available = get().items.filter((i) => i.status === "available").length;
+          return Math.round((available / Math.max(total, 1)) * 100);
+        },
+        get perDomain() {
+          const items = get().items;
+          const domainFilter = get().domain;
+          return DOMAINS.map((d) => {
+            const list = items.filter((i) => i.domain === d.id);
+            const a = list.filter((i) => i.status === "available").length;
+            const m = list.filter((i) => i.status === "missing").length;
+            const n = list.filter((i) => i.status === "na").length;
+            return { domain: d.label, available: a, missing: m, na: n, total: list.length, pct: list.length ? Math.round((a / list.length) * 100) : 0 };
+          }).filter((d) => domainFilter === "all" || d.domain === DOMAINS.find((x) => x.id === domainFilter)?.label);
+        },
+      },
     }),
     {
       name: 'galianc-storage',

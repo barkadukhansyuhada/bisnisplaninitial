@@ -43,26 +43,10 @@ export function Dashboard() {
     exportCSV,
     exportXLSX,
     bulkApplySourceLinks,
+    stats,
   } = useStore();
 
   const filtered = React.useMemo(() => filterItems(items, domain, q), [items, domain, q]);
-
-  const stats = React.useMemo(() => {
-    console.log("Recalculating stats...");
-    const total = items.length;
-    const available = items.filter((i) => i.status === "available").length;
-    const missing = items.filter((i) => i.status === "missing").length;
-    const na = items.filter((i) => i.status === "na").length;
-    const pct = Math.round((available / Math.max(total, 1)) * 100);
-    const perDomain = DOMAINS.map((d) => {
-      const list = items.filter((i) => i.domain === d.id);
-      const a = list.filter((i) => i.status === "available").length;
-      const m = list.filter((i) => i.status === "missing").length;
-      const n = list.filter((i) => i.status === "na").length;
-      return { domain: d.label, available: a, missing: m, na: n, total: list.length, pct: list.length ? Math.round((a / list.length) * 100) : 0 };
-    }).filter((d) => domain === "all" || d.domain === DOMAINS.find((x) => x.id === domain)?.label);
-    return { total, available, missing, na, pct, perDomain };
-  }, [items, domain]);
 
   
 
