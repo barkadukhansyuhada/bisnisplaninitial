@@ -7,6 +7,7 @@ export type DataItem = {
   id: string;
   domain: DomainId | string;
   title: string;
+  friendlyTitle?: string; // User-friendly title for non-technical audiences
   details?: string;
   unit?: string;
   status: ItemStatus;

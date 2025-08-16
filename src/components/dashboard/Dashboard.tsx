@@ -38,11 +38,13 @@ export function Dashboard() {
     setOwner,
     setDue,
     setPriority,
+    setFriendlyTitle,
     addItem,
     importJSON,
     exportCSV,
     exportXLSX,
     bulkApplySourceLinks,
+    saveToStorage,
     stats,
   } = useStore();
 
@@ -62,6 +64,14 @@ export function Dashboard() {
             <p className="text-neutral-600 max-w-2xl">
               Kelola kelengkapan data, pantau progres per-domain, attach Google Drive, dan simulasi finansial cepat untuk business plan Quarry Andesit.
             </p>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mt-2">
+              <button 
+                onClick={saveToStorage}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                💾 Simpan Perubahan
+              </button>
+            </motion.div>
           </div>
           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="rounded-2xl">
@@ -133,7 +143,7 @@ export function Dashboard() {
         {/* Items – switchable view */}
         <div className="mt-6">
           {view === 'table' ? (
-            <TableView items={filtered} setStatus={setStatus} setDetails={setDetails} setUnit={setUnit} setLink={setLink} setOwner={setOwner} setDue={setDue} setPriority={setPriority} setItems={setItems} />
+            <TableView items={filtered} setStatus={setStatus} setDetails={setDetails} setUnit={setUnit} setLink={setLink} setOwner={setOwner} setDue={setDue} setPriority={setPriority} setFriendlyTitle={setFriendlyTitle} setItems={setItems} />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filtered.map((it) => (
@@ -147,6 +157,7 @@ export function Dashboard() {
                   onOwner={(v) => setOwner(it.id, v)}
                   onDue={(v) => setDue(it.id, v)}
                   onPriority={(v) => setPriority(it.id, v)}
+                  onFriendlyTitle={(v) => setFriendlyTitle(it.id, v)}
                   onRemove={() => {
                     // soft remove
                     const confirmed = confirm('Hapus item ini?');

@@ -22,6 +22,7 @@ export function ItemCard({
   onOwner,
   onDue,
   onPriority,
+  onFriendlyTitle,
   onRemove,
 }: {
   item: DataItem;
@@ -32,6 +33,7 @@ export function ItemCard({
   onOwner: (v: string) => void;
   onDue: (v: string) => void;
   onPriority: (v: "Low" | "Medium" | "High") => void;
+  onFriendlyTitle: (v: string) => void;
   onRemove: () => void;
 }) {
   const color = DOMAIN_COLORS[item.domain] ?? { ring: "ring-neutral-200" };
@@ -45,11 +47,21 @@ export function ItemCard({
                 <DomainBadge domain={item.domain} />
                 <StatusPill status={item.status} />
               </div>
-              <h3 className="mt-1 font-semibold text-neutral-900 leading-tight flex items-center gap-1">
+              {item.friendlyTitle && (
+                <div className="mt-1">
+                  <Input 
+                    className="font-bold text-lg bg-blue-50 border-blue-200" 
+                    value={item.friendlyTitle || ""} 
+                    onChange={(e) => onFriendlyTitle(e.target.value)} 
+                    placeholder="Judul yang mudah dipahami" 
+                  />
+                </div>
+              )}
+              <h3 className="mt-1 font-semibold text-neutral-700 leading-tight flex items-center gap-1 text-sm">
                 {DOMAINS.find((d) => d.id === item.domain)?.icon} {item.title}
-                {item.priority === "High" && <Star className="w-5 h-5 text-amber-500 fill-amber-500" />}
-                {item.priority === "Medium" && <Star className="w-5 h-5 text-neutral-400" />}
-                {item.priority === "Low" && <Star className="w-5 h-5 text-neutral-200" />}
+                {item.priority === "High" && <Star className="w-4 h-4 text-amber-500 fill-amber-500" />}
+                {item.priority === "Medium" && <Star className="w-4 h-4 text-neutral-400" />}
+                {item.priority === "Low" && <Star className="w-4 h-4 text-neutral-200" />}
               </h3>
               <Input className="mt-2" value={item.details || ""} onChange={(e) => onDetails(e.target.value)} placeholder="Detail (opsional)" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">

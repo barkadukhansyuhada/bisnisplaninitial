@@ -7,14 +7,15 @@ import { Trash2 } from 'lucide-react';
 import { DataItem, ItemStatus } from '@/lib/types';
 import { DomainBadge } from './DomainBadge';
 
-export function TableView({ items, setStatus, setDetails, setUnit, setLink, setOwner, setDue, setPriority, setItems }: any) {
+export function TableView({ items, setStatus, setDetails, setUnit, setLink, setOwner, setDue, setPriority, setFriendlyTitle, setItems }: any) {
   return (
     <div className="overflow-auto rounded-2xl border">
       <table className="min-w-[1200px] w-full text-sm">
         <thead className="bg-neutral-50 text-neutral-600">
           <tr>
             <th className="p-3 text-left">Domain</th>
-            <th className="p-3 text-left">Judul</th>
+            <th className="p-3 text-left">Judul Mudah Dipahami</th>
+            <th className="p-3 text-left">Judul Teknis</th>
             <th className="p-3 text-left">Detail</th>
             <th className="p-3 text-left">Format/Satuan</th>
             <th className="p-3 text-left">URL</th>
@@ -31,7 +32,15 @@ export function TableView({ items, setStatus, setDetails, setUnit, setLink, setO
               <td className="p-3 whitespace-nowrap">
                 <DomainBadge domain={it.domain} />
               </td>
-              <td className="p-3 min-w-[220px]">{it.title}</td>
+              <td className="p-3 min-w-[280px]">
+                <Input 
+                  className="font-semibold bg-blue-50 border-blue-200" 
+                  value={it.friendlyTitle || ""} 
+                  onChange={(e) => setFriendlyTitle(it.id, e.target.value)} 
+                  placeholder="Judul yang mudah dipahami"
+                />
+              </td>
+              <td className="p-3 min-w-[220px] text-xs text-neutral-600">{it.title}</td>
               <td className="p-3 min-w-[280px]">
                 <Input value={it.details || ""} onChange={(e) => setDetails(it.id, e.target.value)} />
               </td>
