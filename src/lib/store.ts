@@ -276,11 +276,19 @@ interface AppState {
   q: string;
   domain: DomainId | 'all';
   view: 'cards' | 'table';
+  selectedItems: string[];
   stats: { total: number; available: number; missing: number; na: number; pct: number; perDomain: { domain: string; available: number; missing: number; na: number; total: number; pct: number; }[]; };
   setItems: (items: DataItem[]) => void;
   setQ: (q: string) => void;
   setDomain: (domain: DomainId | 'all') => void;
   setView: (view: 'cards' | 'table') => void;
+  toggleItemSelection: (id: string) => void;
+  selectAllItems: (itemIds: string[]) => void;
+  clearSelection: () => void;
+  bulkUpdateStatus: (status: ItemStatus) => void;
+  bulkUpdatePriority: (priority: "Low" | "Medium" | "High") => void;
+  bulkUpdateOwner: (owner: string) => void;
+  bulkDelete: () => void;
   setStatus: (id: string, status: ItemStatus) => void;
   setDetails: (id: string, details: string) => void;
   setUnit: (id: string, unit: string) => void;
@@ -304,10 +312,45 @@ export const useStore = create<AppState>()(
       q: '',
       domain: 'all',
       view: 'cards',
+      selectedItems: [],
       setItems: (items) => set({ items }),
       setQ: (q) => set({ q }),
       setDomain: (domain) => set({ domain }),
       setView: (view) => set({ view }),
+      toggleItemSelection: (id) =>
+        set((state) => ({
+          selectedItems: state.selectedItems.includes(id)
+            ? state.selectedItems.filter(itemId => itemId !== id)
+            : [...state.selectedItems, id]
+        })),
+      selectAllItems: (itemIds) => set({ selectedItems: itemIds }),
+      clearSelection: () => set({ selectedItems: [] }),
+      bulkUpdateStatus: (status) =>
+        set((state) => ({
+          items: state.items.map(item =>
+            state.selectedItems.includes(item.id) ? { ...item, status } : item
+          ),
+          selectedItems: []
+        })),
+      bulkUpdatePriority: (priority) =>
+        set((state) => ({
+          items: state.items.map(item =>
+            state.selectedItems.includes(item.id) ? { ...item, priority } : item
+          ),
+          selectedItems: []
+        })),
+      bulkUpdateOwner: (owner) =>
+        set((state) => ({
+          items: state.items.map(item =>
+            state.selectedItems.includes(item.id) ? { ...item, owner } : item
+          ),
+          selectedItems: []
+        })),
+      bulkDelete: () =>
+        set((state) => ({
+          items: state.items.filter(item => !state.selectedItems.includes(item.id)),
+          selectedItems: []
+        })),
       setStatus: (id, status) =>
         set((state) => ({ items: state.items.map((i) => (i.id === id ? { ...i, status } : i))})),
       setDetails: (id, details) =>

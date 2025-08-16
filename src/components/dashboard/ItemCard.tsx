@@ -15,6 +15,8 @@ import { DOMAINS } from '@/lib/domains';
 
 export function ItemCard({
   item,
+  isSelected,
+  onSelect,
   onStatus,
   onDetails,
   onUnit,
@@ -26,6 +28,8 @@ export function ItemCard({
   onRemove,
 }: {
   item: DataItem;
+  isSelected?: boolean;
+  onSelect?: (selected: boolean) => void;
   onStatus: (s: ItemStatus) => void;
   onDetails: (v: string) => void;
   onUnit: (v: string) => void;
@@ -39,11 +43,25 @@ export function ItemCard({
   const color = DOMAIN_COLORS[item.domain] ?? { ring: "ring-neutral-200" };
   return (
     <motion.div layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-      <Card className={`rounded-2xl shadow-sm border border-neutral-200 hover:shadow-lg transition-all duration-200 ring-1 ${color.ring}`}>
+      <Card className={`rounded-2xl shadow-sm border transition-all duration-200 ring-1 ${
+        isSelected 
+          ? 'border-blue-300 bg-blue-50 ring-blue-200 shadow-lg' 
+          : `border-neutral-200 hover:shadow-lg ${color.ring}`
+      }`}>
         <CardContent className="p-4 flex flex-col gap-3">
           <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
+                {onSelect && (
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isSelected || false}
+                      onChange={(e) => onSelect(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-white border-2 border-neutral-300 rounded focus:ring-blue-500 focus:ring-2"
+                    />
+                  </label>
+                )}
                 <DomainBadge domain={item.domain} />
                 <StatusPill status={item.status} />
               </div>

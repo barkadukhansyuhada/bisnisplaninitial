@@ -3,7 +3,9 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { AddItem } from './AddItem';
+import { BulkActionsToolbar } from './BulkActionsToolbar';
 import { DomainBar } from './DomainBar';
+import { EnhancedCards } from './EnhancedCards';
 import { FinancialPanel } from './FinancialPanel';
 import { ItemCard } from './ItemCard';
 import { SourceLinksPanel } from './SourceLinksPanel';
@@ -17,13 +19,16 @@ import { UploadCenter } from './UploadCenter';
 import { DOMAINS } from '@/lib/domains';
 import { useStore } from '@/lib/store';
 import { filterItems } from '@/lib/utils';
-
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { ShortcutHelpModal } from './ShortcutHelpModal';
 
 import { Sparkles } from 'lucide-react';
 
 export function Dashboard() {
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const [showHelpModal, setShowHelpModal] = React.useState(false);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
   
   const {
     items,
@@ -34,6 +39,14 @@ export function Dashboard() {
     setDomain,
     view,
     setView,
+    selectedItems,
+    toggleItemSelection,
+    selectAllItems,
+    clearSelection,
+    bulkUpdateStatus,
+    bulkUpdatePriority,
+    bulkUpdateOwner,
+    bulkDelete,
     setStatus,
     setDetails,
     setUnit,
@@ -71,10 +84,64 @@ export function Dashboard() {
     }
   };
 
+  const handleFocusSearch = () => {
+    // Focus the search input in Toolbar
+    const searchInput = document.querySelector('input[placeholder*="Cari"]') as HTMLInputElement;
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.select();
+    }
+  };
+
+  const handleToggleView = () => {
+    setView(view === 'cards' ? 'table' : 'cards');
+  };
+
+  const handleEscape = () => {
+    if (selectedItems.length > 0) {
+      clearSelection();
+    } else {
+      // Clear search
+      setQ('');
+      // Remove focus from any input
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedItems.length === filtered.length) {
+      clearSelection();
+    } else {
+      selectAllItems(filtered.map(item => item.id));
+    }
+  };
+
+  // Initialize keyboard shortcuts
+  useKeyboardShortcuts({
+    onSave: handleSave,
+    onSearch: handleFocusSearch,
+    onToggleView: handleToggleView,
+    onEscape: handleEscape,
+    onSelectAll: handleSelectAll,
+    onHelp: () => setShowHelpModal(true),
+  });
+
   
 
   return (
     <div className="min-h-screen text-neutral-900 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-50 via-white to-cyan-50">
+      {/* Bulk Actions Toolbar */}
+      <BulkActionsToolbar
+        selectedCount={selectedItems.length}
+        onClearSelection={clearSelection}
+        onBulkUpdateStatus={bulkUpdateStatus}
+        onBulkUpdatePriority={bulkUpdatePriority}
+        onBulkUpdateOwner={bulkUpdateOwner}
+        onBulkDelete={bulkDelete}
+      />
+      
       <div className="mx-auto max-w-7xl p-4 md:p-8">
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -119,29 +186,8 @@ export function Dashboard() {
           </Card>
         </div>
 
-        {/* Quick stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-          <Card className="rounded-2xl">
-            <CardContent className="p-4">
-              <Stat label="Total item" value={String(stats.total)} />
-            </CardContent>
-          </Card>
-          <Card className="rounded-2xl">
-            <CardContent className="p-4">
-              <Stat label="Ada" value={String(stats.available)} />
-            </CardContent>
-          </Card>
-          <Card className="rounded-2xl">
-            <CardContent className="p-4">
-              <Stat label="Kurang" value={String(stats.missing)} />
-            </CardContent>
-          </Card>
-          <Card className="rounded-2xl">
-            <CardContent className="p-4">
-              <Stat label="N/A" value={String(stats.na)} />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Enhanced Dashboard Cards */}
+        <EnhancedCards items={items} stats={stats} />
 
         {/* Financials */}
         <div className="mt-8">
@@ -163,6 +209,8 @@ export function Dashboard() {
                 <ItemCard
                   key={it.id}
                   item={it}
+                  isSelected={selectedItems.includes(it.id)}
+                  onSelect={() => toggleItemSelection(it.id)}
                   onStatus={(s) => setStatus(it.id, s)}
                   onDetails={(v) => setDetails(it.id, v)}
                   onUnit={(v) => setUnit(it.id, v)}
@@ -269,6 +317,12 @@ export function Dashboard() {
           Tip: tempel URL Google Drive di panel "Source Links" untuk auto‑attach ke item terkait (geolistrik, LAA, resume uji).
         </div>
       </div>
+      
+      {/* Keyboard Shortcuts Help Modal */}
+      <ShortcutHelpModal 
+        isOpen={showHelpModal} 
+        onClose={() => setShowHelpModal(false)} 
+      />
     </div>
   );
 }
