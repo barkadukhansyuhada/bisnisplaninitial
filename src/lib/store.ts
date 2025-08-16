@@ -380,17 +380,44 @@ export const useStore = create<AppState>()(
       bulkApplySourceLinks: (src) =>
         set((state) => ({ items: mapSourceLinks(state.items, src) })),
       saveToStorage: () => {
-        // Force save current state to localStorage
-        const currentState = get();
-        localStorage.setItem('galianc-storage', JSON.stringify({
-          state: {
-            items: currentState.items,
-            q: currentState.q,
-            domain: currentState.domain,
-            view: currentState.view,
-          },
-          version: 0
-        }));
+        return new Promise((resolve, reject) => {
+          try {
+            // Force save current state to localStorage
+            const currentState = get();
+            const dataToSave = {
+              state: {
+                items: currentState.items,
+                q: currentState.q,
+                domain: currentState.domain,
+                view: currentState.view,
+              },
+              version: 0
+            };
+            
+            localStorage.setItem('galianc-storage', JSON.stringify(dataToSave));
+            
+            // Verify the save was successful
+            const savedData = localStorage.getItem('galianc-storage');
+            if (savedData) {
+              const parsed = JSON.parse(savedData);
+              if (parsed.state.items.length === currentState.items.length) {
+                console.log('✅ Save successful:', {
+                  totalItems: currentState.items.length,
+                  available: currentState.items.filter(i => i.status === 'available').length,
+                  percentage: Math.round((currentState.items.filter(i => i.status === 'available').length / currentState.items.length) * 100)
+                });
+                resolve(true);
+              } else {
+                throw new Error('Save verification failed');
+              }
+            } else {
+              throw new Error('Failed to save to localStorage');
+            }
+          } catch (error) {
+            console.error('❌ Save failed:', error);
+            reject(error);
+          }
+        });
       },
       stats: {
         get total() {

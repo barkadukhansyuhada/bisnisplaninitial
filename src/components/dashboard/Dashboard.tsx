@@ -22,6 +22,9 @@ import { filterItems } from '@/lib/utils';
 import { Sparkles } from 'lucide-react';
 
 export function Dashboard() {
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [saveSuccess, setSaveSuccess] = React.useState(false);
+  
   const {
     items,
     setItems,
@@ -50,6 +53,24 @@ export function Dashboard() {
 
   const filtered = React.useMemo(() => filterItems(items, domain, q), [items, domain, q]);
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    setSaveSuccess(false);
+    
+    try {
+      // Call the save function
+      await saveToStorage();
+      
+      // Show success feedback
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error saving:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   
 
   return (
@@ -64,14 +85,6 @@ export function Dashboard() {
             <p className="text-neutral-600 max-w-2xl">
               Kelola kelengkapan data, pantau progres per-domain, attach Google Drive, dan simulasi finansial cepat untuk business plan Quarry Andesit.
             </p>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="mt-2">
-              <button 
-                onClick={saveToStorage}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-              >
-                💾 Simpan Perubahan
-              </button>
-            </motion.div>
           </div>
           <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="rounded-2xl">
@@ -168,6 +181,67 @@ export function Dashboard() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Save Button */}
+        <div className="mt-8 flex justify-center">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-2xl shadow-lg border border-neutral-200 p-6"
+          >
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-center">
+                <h3 className="font-semibold text-lg text-neutral-800">Simpan Perubahan</h3>
+                <p className="text-sm text-neutral-600 mt-1">
+                  Klik tombol ini untuk menyimpan semua perubahan checklist secara permanen
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className={`px-8 py-3 rounded-xl font-semibold text-white transition-all duration-200 flex items-center gap-2 ${
+                    isSaving 
+                      ? 'bg-neutral-400 cursor-not-allowed' 
+                      : saveSuccess 
+                        ? 'bg-green-600 hover:bg-green-700' 
+                        : 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                  }`}
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Menyimpan...
+                    </>
+                  ) : saveSuccess ? (
+                    <>
+                      ✅ Tersimpan!
+                    </>
+                  ) : (
+                    <>
+                      💾 Simpan Perubahan
+                    </>
+                  )}
+                </button>
+                
+                {saveSuccess && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="text-green-600 font-medium text-sm"
+                  >
+                    Data berhasil disimpan! Persentase diperbarui secara otomatis.
+                  </motion.div>
+                )}
+              </div>
+              
+              <div className="text-xs text-neutral-500 text-center">
+                Progress: <span className="font-semibold text-blue-600">{stats.pct}%</span> ({stats.available}/{stats.total} item tersedia)
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Source Links */}
